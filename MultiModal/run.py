@@ -94,10 +94,12 @@ if __name__ == '__main__':
 
     #history = model.fit(x=train_X, y=train_Y, epochs = 0, validation_data = (test_X, test_Y), shuffle='steps_per_epoch')
 
-    preds = model.predict(test_X)
-    preds = preds.argmax(1)
+    score_preds, helpfulness_preds = model.predict(test_X)
+    score_preds = score_preds.argmax(1)
+    helpfulness_preds = helpfulness_preds.argmax(1)
 
-    print(type(preds))
+    print(type(score_preds))
+    print(score_preds.shape)
 
     testset['Pred'] = preds + 1
 
