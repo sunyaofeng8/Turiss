@@ -72,7 +72,7 @@ tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram
 history = model.fit(x=X, y=Y, epochs = 1, validation_split = 0.2, shuffle='steps_per_epoch', callbacks=[tensorboard_callback])
 '''
 
-history = model.fit(x=train_X, y=train_Y, epochs = 1, validation_data = (test_X, test_Y), shuffle='steps_per_epoch')
+history = model.fit(x=train_X, y=train_Y, epochs = 20, validation_data = (test_X, test_Y), shuffle='steps_per_epoch')
 
 
 preds = model.predict(test_X)
