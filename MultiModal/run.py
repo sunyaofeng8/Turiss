@@ -83,15 +83,16 @@ if __name__ == '__main__':
     test_X, test_Y = DatasetToTensor(testset)
 
     model = MultiModalModel()
-    history = model.fit(x=train_X, y=train_Y, epochs = 1, validation_data = (test_X, test_Y), shuffle='steps_per_epoch')
 
     checkpoints_dir = './checkpoints/'
     load_file = 'bert_model.h5'
-    
-    '''
+
     if load_file:
         model.load_weights(checkpoints_dir+load_file)
-    '''
+
+    history = model.fit(x=train_X, y=train_Y, epochs = 1, validation_data = (test_X, test_Y), shuffle='steps_per_epoch')
+
+    
 
     model.save_weights(checkpoints_dir + 'bert_model.h5')
 
