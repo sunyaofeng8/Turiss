@@ -17,15 +17,15 @@ def DatasetToTensor(df):
     '''
     
     convert = lambda s : (list(map(int, s[1:-1].split(','))))
-    X = [tf.convert_to_tensor(trainset['Normalized_Product_ID'], dtype=tf.int32),
-        tf.convert_to_tensor(trainset['Normalized_User_ID'], dtype=tf.int32),
-        tf.convert_to_tensor(trainset['Normalized_Time_ID'], dtype=tf.int32),
-        tf.convert_to_tensor(trainset['input_ids'].apply(convert), dtype=tf.int32),
-        tf.convert_to_tensor(trainset['input_masks'].apply(convert), dtype=tf.int32),
-        tf.convert_to_tensor(trainset['input_segments'].apply(convert), dtype=tf.int32),
+    X = [tf.convert_to_tensor(df['Normalized_Product_ID'], dtype=tf.int32),
+        tf.convert_to_tensor(df['Normalized_User_ID'], dtype=tf.int32),
+        tf.convert_to_tensor(df['Normalized_Time_ID'], dtype=tf.int32),
+        tf.convert_to_tensor(df['input_ids'].apply(convert), dtype=tf.int32),
+        tf.convert_to_tensor(df['input_masks'].apply(convert), dtype=tf.int32),
+        tf.convert_to_tensor(df['input_segments'].apply(convert), dtype=tf.int32),
     ]
-    Y = [tf.convert_to_tensor(trainset['Score'] - 1, dtype=tf.int32),
-        tf.convert_to_tensor(trainset['NormalizedHelpfulness'] - 1, dtype=tf.int32),
+    Y = [tf.convert_to_tensor(df['Score'] - 1, dtype=tf.int32),
+        tf.convert_to_tensor(df['NormalizedHelpfulness'] - 1, dtype=tf.int32),
     ]
 
     return X, Y
@@ -84,14 +84,13 @@ if __name__ == '__main__':
     model = MultiModalModel()
 
     checkpoints_dir = './checkpoints/'
-    load_file = 'bert_model.h5'
+    #load_file = 'bert_model.h5'
+    load_file = None
 
     if load_file != None:
         model.load_weights(checkpoints_dir+load_file)
 
-    #history = model.fit(x=train_X, y=train_Y, epochs = 0, validation_data = (test_X, test_Y), shuffle='steps_per_epoch')
-
-    print(test_X[0].shape)
+    history = model.fit(x=train_X, y=train_Y, epochs = 2, validation_data = (test_X, test_Y), shuffle='steps_per_epoch')
 
     score_preds, helpfulness_preds = model.predict(test_X)
     score_preds = score_preds.argmax(1)
@@ -103,6 +102,8 @@ if __name__ == '__main__':
 
     testset['score_preds'] = score_preds + 1
     testset['helpfulness_preds'] = helpfulness_preds + 1
+
+    testset.to_csv(r'res.csv', index=False)
 
     model.save_weights(checkpoints_dir + 'bert_model.h5')
 
