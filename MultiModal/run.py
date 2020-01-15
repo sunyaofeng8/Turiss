@@ -83,7 +83,7 @@ if __name__ == '__main__':
     test_X, test_Y = DatasetToTensor(testset)
 
     model = MultiModalModel()
-    history = model.fit(x=train_X, y=train_Y, epochs = 3, validation_data = (test_X, test_Y), shuffle='steps_per_epoch')
+    history = model.fit(x=train_X, y=train_Y, epochs = 1, validation_data = (test_X, test_Y), shuffle='steps_per_epoch')
 
     checkpoints_dir = './checkpoints/'
     load_file = 'bert_model.h5'
