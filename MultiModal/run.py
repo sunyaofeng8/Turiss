@@ -86,8 +86,7 @@ if __name__ == '__main__':
     model = MultiModalModel()
 
     checkpoints_dir = './checkpoints/'
-    #load_file = 'bert_model.h5'
-    load_file = None
+    load_file = 'bert_model.h5'
 
     if load_file != None:
         model.load_weights(checkpoints_dir+load_file)
@@ -101,7 +100,8 @@ if __name__ == '__main__':
     print(type(score_preds))
     print(score_preds.shape)
 
-    testset['Pred'] = preds + 1
+    testset['score_preds'] = score_preds + 1
+    testset['helpfulness_preds'] = helpfulness_preds + 1
 
     model.save_weights(checkpoints_dir + 'bert_model.h5')
 
