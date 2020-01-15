@@ -91,7 +91,7 @@ if __name__ == '__main__':
 
     #history = model.fit(x=train_X, y=train_Y, epochs = 0, validation_data = (test_X, test_Y), shuffle='steps_per_epoch')
 
-    print(test_X.shape)
+    print(test_X[0].shape)
 
     score_preds, helpfulness_preds = model.predict(test_X)
     score_preds = score_preds.argmax(1)
