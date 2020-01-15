@@ -43,7 +43,9 @@ plt.show()
 def sigmoid(x):
     return 1. / (1 + np.exp(-x))
 
-train_df = train_df[(train_df['HelpfulnessDenominator']>0) & (train_df['HelpfulnessDenominator']<20000)]
+#train_df = train_df[(train_df['HelpfulnessDenominator']>0) & (train_df['HelpfulnessDenominator']<20000)]
+
+
 train_df["Usefulness"] = (sigmoid(train_df['HelpfulnessDenominator']) * train_df["HelpfulnessNumerator"]/train_df["HelpfulnessDenominator"]).apply\
 (lambda n: ">80%" if n >= 0.8 else ("<20%" if n < 0.2 else ("20-40%" if n >= 0.2 and n < 0.4 else ("40%-60%" if n >= 0.4\
 and n < 0.6 else ("60-80%" if n >= 0.6 and n < 0.8 else "useless")) )))
