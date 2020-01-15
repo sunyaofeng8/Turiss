@@ -17,10 +17,10 @@ testset = pd.read_csv(test_dataset_fp)
 
 from utility import BertTokenizer, CleanedTextDict
 
-#bert_layer = hub.KerasLayer("./bert_layer", trainable=False)
-bert_layer = hub.Module(
-    "https://tfhub.dev/google/albert_base/2",
-    trainable=True)
+bert_layer = hub.KerasLayer("./bert_layer", trainable=True)
+#bert_layer = hub.Module(
+#    "https://tfhub.dev/google/albert_base/2",
+#    trainable=True)
 
 tokenizer = BertTokenizer(max_len=256, bert_layer=bert_layer)
 
@@ -62,7 +62,8 @@ input_id = tf.keras.layers.Input(shape=(max_len,), dtype=tf.int32)
 input_mask = tf.keras.layers.Input(shape=(max_len,), dtype=tf.int32)
 input_segment = tf.keras.layers.Input(shape=(max_len,), dtype=tf.int32)
 
-#pooled_output, sequence_output = bert_layer([input_id, input_mask, input_segment])
+pooled_output, sequence_output = bert_layer([input_id, input_mask, input_segment])
+'''
 albert_inputs = dict(
     input_ids=input_id,
     input_mask=input_mask,
@@ -70,7 +71,7 @@ albert_inputs = dict(
 albert_outputs = bert_layer(albert_inputs, signature="tokens", as_dict=True)
 pooled_output = albert_outputs["pooled_output"]
 sequence_output = albert_outputs["sequence_output"]
-
+'''
 F1 = keras.layers.Dense(64, activation='relu')(pooled_output)
 F2 = keras.layers.Dropout(0.2)(F1)
 F3 = keras.layers.Dense(5, activation='softmax')(F2)
