@@ -9,13 +9,16 @@ from sklearn.utils import shuffle
 from tensorflow.keras.models import Model 
 import tensorflow_hub as hub
 from tensorflow.keras.optimizers import Adam
-train_dataset_fp = './data/train_set.csv'
-test_dataset_fp = './data/test_set.csv'
+train_dataset_fp = './data/local_train_set.csv'
+test_dataset_fp = './data/local_test_set.csv'
 
 trainset = pd.read_csv(train_dataset_fp)
 testset = pd.read_csv(test_dataset_fp)
 
 from utility import BertTokenizer, CleanedTextDict
+
+checkpoints_dir = './checkpoints/'
+load_file = 'bert_model.h5'
 
 bert_layer = hub.KerasLayer("./bert_layer", trainable=True)
 #bert_layer = hub.Module("https://tfhub.dev/google/bert_cased_L-12_H-768_A-12/1", trainable=True)
@@ -61,6 +64,8 @@ F3 = keras.layers.Dense(5, activation='softmax')(F2)
 
 opt = Adam(lr=1e-5)
 model = Model(inputs=[input_id, input_mask, input_segment], outputs=F3)
+if load_file:
+    model.load_weights(checkpoints_dir+load_file)
 model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
 model.summary()
 '''
@@ -72,9 +77,9 @@ tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram
 history = model.fit(x=X, y=Y, epochs = 1, validation_split = 0.2, shuffle='steps_per_epoch', callbacks=[tensorboard_callback])
 '''
 
-history = model.fit(x=train_X, y=train_Y, epochs = 20, validation_data = (test_X, test_Y), shuffle='steps_per_epoch')
+history = model.fit(x=train_X, y=train_Y, epochs = 1, validation_data = (test_X, test_Y), shuffle='steps_per_epoch')
 
-model.save('checkpoints/bert.model')
+model.save_weights(checkpoints_dir + 'bert_model.h5')
 
 preds = model.predict(test_X)
 preds = preds.argmax(1)
