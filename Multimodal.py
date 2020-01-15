@@ -10,10 +10,12 @@ from tensorflow.keras.models import Model
 import tensorflow_hub as hub
 
 train_dataset_fp = './data/local_train_set.csv'
-test_dataset_fp = './data/local_test_set.csv'
+#test_dataset_fp = './data/local_test_set.csv'
 
 trainset = pd.read_csv(train_dataset_fp)
-testset = pd.read_csv(test_dataset_fp)
+#testset = pd.read_csv(test_dataset_fp)
+
+trainset = trainset[:500]
 
 from utility import BertTokenizer, CleanedTextDict
 
