@@ -71,7 +71,7 @@ history = model.fit(x=X, y=Y, epochs = 1, validation_split = 0.2, shuffle='steps
 preds = model.predict(X)
 preds = preds.argmax(1)
 
-truths = testset['Score'].values - 1
+truths = trainset['Score'].values - 1
 
 res = [[0]*5 for i in range(5)]
 
