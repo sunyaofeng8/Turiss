@@ -8,14 +8,9 @@ from tensorflow import keras
 from tensorflow.keras.models import Model 
 from tensorflow.keras.optimizers import Adam
 
+import argparse
 
 def DatasetToTensor(df):
-    '''
-    X = trainset['input_ids']
-    print(X.shape)
-    return 1,1
-    '''
-    
     convert = lambda s : (list(map(int, s[1:-1].split(','))))
     X = [tf.convert_to_tensor(df['Normalized_Product_ID'], dtype=tf.int32),
         tf.convert_to_tensor(df['Normalized_User_ID'], dtype=tf.int32),
@@ -75,8 +70,24 @@ def MultiModalModel():
     return model
 
 if __name__ == '__main__':
-    trainset = pd.read_csv('./data/local_train_set.csv')
-    testset = pd.read_csv('./data/local_test_set.csv')
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--load', action='store_true'
+    )
+    parser.add_argument(
+        '--big', action='store_ture'
+    )
+    parser.add_argument(
+        '--epoch', type=int
+    )
+    args = parser.parse_args()
+
+    if args.big:
+        trainset = pd.read_csv('./data/train_set.csv')
+        testset = pd.read_csv('./data/test_set.csv')
+    else:
+        trainset = pd.read_csv('./data/local_train_set.csv')
+        testset = pd.read_csv('./data/local_test_set.csv')
 
     train_X, train_Y = DatasetToTensor(trainset)
     test_X, test_Y = DatasetToTensor(testset)
@@ -84,21 +95,16 @@ if __name__ == '__main__':
     model = MultiModalModel()
 
     checkpoints_dir = './checkpoints/'
-    #load_file = 'bert_model.h5'
-    load_file = None
+    load_file = 'bert_model.h5'
 
-    if load_file != None:
+    if args.load:
         model.load_weights(checkpoints_dir+load_file)
 
-    history = model.fit(x=train_X, y=train_Y, epochs = 2, validation_data = (test_X, test_Y), shuffle='steps_per_epoch')
+    history = model.fit(x=train_X, y=train_Y, epochs = args.epochs, validation_data = (test_X, test_Y), shuffle='steps_per_epoch')
 
     score_preds, helpfulness_preds = model.predict(test_X)
     score_preds = score_preds.argmax(1)
     helpfulness_preds = helpfulness_preds.argmax(1)
-
-    print(type(score_preds))
-    print(score_preds.shape)
-    print(helpfulness_preds.shape)
 
     testset['score_preds'] = score_preds + 1
     testset['helpfulness_preds'] = helpfulness_preds + 1
