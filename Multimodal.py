@@ -8,7 +8,7 @@ from sklearn.utils import shuffle
 
 from tensorflow.keras.models import Model 
 import tensorflow_hub as hub
-
+from tensorflow.keras.optimizers import Adam
 train_dataset_fp = './data/train_set.csv'
 test_dataset_fp = './data/test_set.csv'
 
@@ -17,8 +17,8 @@ testset = pd.read_csv(test_dataset_fp)
 
 from utility import BertTokenizer, CleanedTextDict
 
-bert_layer = hub.KerasLayer("./bert_layer", trainable=False)
-
+bert_layer = hub.KerasLayer("./bert_layer", trainable=True)
+#bert_layer = hub.Module("https://tfhub.dev/google/bert_cased_L-12_H-768_A-12/1", trainable=True)
 tokenizer = BertTokenizer(max_len = 256, bert_layer = bert_layer)
 #textDic = CleanedTextDict(trainset, testset)
 
@@ -55,13 +55,13 @@ input_mask = tf.keras.layers.Input(shape=(max_len,), dtype=tf.int32)
 input_segment = tf.keras.layers.Input(shape=(max_len,), dtype=tf.int32)
 
 pooled_output, sequence_output = bert_layer([input_id, input_mask, input_segment])
-
 F1 = keras.layers.Dense(64, activation='relu')(pooled_output)
 F2 = keras.layers.Dropout(0.2)(F1)
 F3 = keras.layers.Dense(5, activation='softmax')(F2)
 
+opt = Adam(lr=1e-5)
 model = Model(inputs=[input_id, input_mask, input_segment], outputs=F3)
-model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
 model.summary()
 '''
 import datetime
@@ -74,6 +74,7 @@ history = model.fit(x=X, y=Y, epochs = 1, validation_split = 0.2, shuffle='steps
 
 history = model.fit(x=train_X, y=train_Y, epochs = 20, validation_data = (test_X, test_Y), shuffle='steps_per_epoch')
 
+model.save('checkpoints/bert.model')
 
 preds = model.predict(test_X)
 preds = preds.argmax(1)
