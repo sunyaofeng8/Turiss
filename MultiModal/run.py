@@ -102,7 +102,7 @@ if __name__ == '__main__':
     if args.load != None:
         model.load_weights(checkpoints_dir+load_file)
 
-    history = model.fit(x=train_X, y=train_Y, epochs = args.epochs, validation_data = (test_X, test_Y), shuffle='steps_per_epoch')
+    history = model.fit(x=train_X, y=train_Y, epochs = args.epoch, validation_data = (test_X, test_Y), shuffle='steps_per_epoch')
 
     score_preds, helpfulness_preds = model.predict(test_X)
     score_preds = score_preds.argmax(1)
