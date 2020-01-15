@@ -17,7 +17,7 @@ testset = pd.read_csv(test_dataset_fp)
 
 from utility import BertTokenizer, CleanedTextDict
 
-bert_layer = hub.KerasLayer("./bert_layer", trainable=True)
+bert_layer = hub.KerasLayer("./bert_layer", trainable=False)
 
 tokenizer = BertTokenizer(max_len = 256, bert_layer = bert_layer)
 #textDic = CleanedTextDict(trainset, testset)
