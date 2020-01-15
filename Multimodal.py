@@ -27,7 +27,14 @@ X = [tf.convert_to_tensor(trainset['input_ids'], dtype=tf.int32),
     tf.convert_to_tensor(trainset['input_segments'], dtype=tf.int32),
 ]
 
-Y = tf.convert_to_tensor(trainset['Score']-1, dtype=tf.float32)
+def ScoreToTensor(raw_Y):
+    Y = np.array(raw_Y) - 1 # convert to [0, 4]
+    Y = [[int(t == label) for t in range(5)] for label in Y]
+    Y = tf.convert_to_tensor(Y, dtype=tf.float32)
+    
+    return Y
+
+Y = ScoreToTensor(trainset['Score'])
 
 from tensorflow.keras.models import Model 
 import tensorflow_hub as hub
@@ -48,10 +55,10 @@ F3 = keras.layers.Dense(5, activation='softmax')(F2)
 model = Model(inputs=[input_id, input_mask, input_segment], outputs=F3)
 model.summary()
 
-model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 model.summary()
 
-history = model.fit(x=X, y=Y, epochs = 3, validation_split = 0.2, shuffle='steps_per_epoch')
+history = model.fit(x=X, y=Y, epochs = 1, validation_split = 0.2, shuffle='steps_per_epoch')
 
 print(history)
 
