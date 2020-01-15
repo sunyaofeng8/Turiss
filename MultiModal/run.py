@@ -83,7 +83,10 @@ if __name__ == '__main__':
         '--epoch', type=int
     )
     parser.add_argument(
-        '--lr', type=float
+        '--lr', type=float, default=0.00005
+    )
+    parser.add_argument(
+        '--log', type=str
     )
     args = parser.parse_args()
     print(args)
@@ -106,12 +109,37 @@ if __name__ == '__main__':
     if args.load != None:
         model.load_weights(checkpoints_dir+load_file)
 
-    history = model.fit(x=train_X, y=train_Y, epochs = args.epoch, validation_data = (test_X, test_Y), shuffle='steps_per_epoch')
+    class LossHistory(keras.callbacks.Callback):
+        def on_train_begin(self, logs={}):
+            self.acc = []
+            self.loss = []
+            self.val_acc = []
+            self.val_loss = []
+        '''
+        def on_batch_end(self, batch, logs={}):
+            self.losses.append(logs.get('loss'))
+        '''
+        def on_epoch_end(self, epoch, logs={}):
+            self.acc.append(logs.get('acc'))
+            self.loss.append(logs.get('loss'))
+            self.val_acc.append(logs.get('val_acc'))
+            self.val_loss.append(logs.get('val_loss'))
+        
+        def Output(self, filename):
+            file = open(filename, 'w')
+            print(self.acc, file=file)
+            print(self.loss, file=file)
+            print(self.val_acc, file=file)
+            print(self.val_loss, file=file)
 
-    hist = pd.DataFrame(history.history)
-    hist['epoch'] = history.epoch
+    loss_history = LossHistory()    
+    early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
 
-    print(hist.head())
+    model.fit(x=train_X, y=train_Y, epochs = args.epoch, \
+        validation_data = (test_X, test_Y), shuffle='steps_per_epoch', \
+            callbacks=[early_stop, loss_history])
+
+    loss_history.Output(arg.log)
 
     score_preds, helpfulness_preds = model.predict(test_X)
     score_preds = score_preds.argmax(1)
@@ -123,10 +151,4 @@ if __name__ == '__main__':
     testset.to_csv(r'res.csv', index=False)
 
     model.save_weights(checkpoints_dir + 'bert_model.h5')
-
-
-
-
-
-
 
