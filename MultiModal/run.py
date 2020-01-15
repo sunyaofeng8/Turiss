@@ -72,10 +72,10 @@ def MultiModalModel():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--load', action='store_true'
+        '--load', action='store_true', default=false
     )
     parser.add_argument(
-        '--big', action='store_ture'
+        '--big', action='store_ture', default=false
     )
     parser.add_argument(
         '--epoch', type=int
