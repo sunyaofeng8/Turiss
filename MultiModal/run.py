@@ -9,7 +9,6 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 
 
-
 def DatasetToTensor(df):
     '''
     X = trainset['input_ids']
@@ -79,20 +78,28 @@ if __name__ == '__main__':
     trainset = pd.read_csv('./data/local_train_set.csv')
     testset = pd.read_csv('./data/local_test_set.csv')
 
+    testset = testset[:1]
+
     train_X, train_Y = DatasetToTensor(trainset)
     test_X, test_Y = DatasetToTensor(testset)
 
     model = MultiModalModel()
 
     checkpoints_dir = './checkpoints/'
-    load_file = 'bert_model.h5'
+    #load_file = 'bert_model.h5'
+    load_file = None
 
-    if load_file:
+    if load_file != None:
         model.load_weights(checkpoints_dir+load_file)
 
-    history = model.fit(x=train_X, y=train_Y, epochs = 1, validation_data = (test_X, test_Y), shuffle='steps_per_epoch')
+    #history = model.fit(x=train_X, y=train_Y, epochs = 0, validation_data = (test_X, test_Y), shuffle='steps_per_epoch')
 
-    
+    preds = model.predict(test_X)
+    preds = preds.argmax(1)
+
+    print(type(preds))
+
+    testset['Pred'] = preds + 1
 
     model.save_weights(checkpoints_dir + 'bert_model.h5')
 
