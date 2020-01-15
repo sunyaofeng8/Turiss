@@ -56,14 +56,16 @@ F3 = keras.layers.Dense(5, activation='softmax')(F2)
 model = Model(inputs=[input_id, input_mask, input_segment], outputs=F3)
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 model.summary()
-
+'''
 import datetime
 
 log_dir="logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
 history = model.fit(x=X, y=Y, epochs = 1, validation_split = 0.2, shuffle='steps_per_epoch', callbacks=[tensorboard_callback])
+'''
 
+history = model.fit(x=X, y=Y, epochs = 1, validation_split = 0.2, shuffle='steps_per_epoch')
 
 
 
