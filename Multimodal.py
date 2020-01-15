@@ -9,8 +9,8 @@ from sklearn.utils import shuffle
 from tensorflow.keras.models import Model 
 import tensorflow_hub as hub
 
-train_dataset_fp = './data/local_train_set.csv'
-test_dataset_fp = './data/local_test_set.csv'
+train_dataset_fp = './data/train_set.csv'
+test_dataset_fp = './data/test_set.csv'
 
 trainset = pd.read_csv(train_dataset_fp)
 testset = pd.read_csv(test_dataset_fp)
