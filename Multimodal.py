@@ -53,7 +53,7 @@ model.summary()
 
 history = model.fit(x=X, y=Y, epochs = 3, validation_split = 0.2, shuffle='steps_per_epoch')
 
-
+print(history)
 
 
 
