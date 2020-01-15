@@ -68,6 +68,21 @@ history = model.fit(x=X, y=Y, epochs = 1, validation_split = 0.2, shuffle='steps
 history = model.fit(x=X, y=Y, epochs = 1, validation_split = 0.2, shuffle='steps_per_epoch')
 
 
+preds = model.predict(X)
+preds = preds.argmax(1)
+
+truths = testset['Score'].values - 1
+
+res = [[0]*5 for i in range(5)]
+
+for pred, truth in zip(preds, truths):
+    res[truth][pred] += 1
+
+tot = truths.size // 5
+
+for i in range(5):
+    print([x / tot for x in res[i]])
+
 
 
 
