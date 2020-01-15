@@ -78,8 +78,6 @@ if __name__ == '__main__':
     trainset = pd.read_csv('./data/local_train_set.csv')
     testset = pd.read_csv('./data/local_test_set.csv')
 
-    testset = testset[:1]
-
     train_X, train_Y = DatasetToTensor(trainset)
     test_X, test_Y = DatasetToTensor(testset)
 
