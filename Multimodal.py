@@ -6,6 +6,9 @@ from tensorflow import keras
 
 from sklearn.utils import shuffle
 
+from tensorflow.keras.models import Model 
+import tensorflow_hub as hub
+
 train_dataset_fp = './data/local_train_set.csv'
 test_dataset_fp = './data/local_test_set.csv'
 
@@ -14,7 +17,9 @@ testset = pd.read_csv(test_dataset_fp)
 
 from utility import BertTokenizer, CleanedTextDict
 
-tokenizer = BertTokenizer(max_len = 256)
+bert_layer = hub.KerasLayer("./bert_layer", trainable=True)
+
+tokenizer = BertTokenizer(max_len = 256, bert_layer = bert_layer)
 #textDic = CleanedTextDict(trainset, testset)
 
 trainset['stokens'] = trainset['CleanedText'].apply(lambda x: tokenizer.GetStokens(x))
@@ -36,16 +41,12 @@ def ScoreToTensor(raw_Y):
 
 Y = ScoreToTensor(trainset['Score'])
 
-from tensorflow.keras.models import Model 
-import tensorflow_hub as hub
-
 max_len = 256
 
 input_id = tf.keras.layers.Input(shape=(max_len,), dtype=tf.int32)
 input_mask = tf.keras.layers.Input(shape=(max_len,), dtype=tf.int32)
 input_segment = tf.keras.layers.Input(shape=(max_len,), dtype=tf.int32)
 
-bert_layer = hub.KerasLayer("./bert_layer", trainable=True)
 pooled_output, sequence_output = bert_layer([input_id, input_mask, input_segment])
 
 F1 = keras.layers.Dense(64, activation='relu')(pooled_output)
@@ -53,14 +54,15 @@ F2 = keras.layers.Dropout(0.2)(F1)
 F3 = keras.layers.Dense(5, activation='softmax')(F2)
 
 model = Model(inputs=[input_id, input_mask, input_segment], outputs=F3)
-model.summary()
-
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 model.summary()
 
-history = model.fit(x=X, y=Y, epochs = 1, validation_split = 0.2, shuffle='steps_per_epoch')
+import datetime
 
-print(history)
+log_dir="logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+
+history = model.fit(x=X, y=Y, epochs = 1, validation_split = 0.2, shuffle='steps_per_epoch', callbacks=[tensorboard_callback])
 
 
 

@@ -5,9 +5,9 @@ import bert
 import numpy as np
 
 class BertTokenizer:
-    def __init__(self, max_len):
+    def __init__(self, max_len, bert_layer):
         self.FullTokenizer = bert.bert_tokenization.FullTokenizer
-        self.bert_layer = hub.KerasLayer("./bert_layer", trainable=False)
+        self.bert_layer = bert_layer
         self.vocab_file = self.bert_layer.resolved_object.vocab_file.asset_path.numpy()
         self.do_lower_case = self.bert_layer.resolved_object.do_lower_case.numpy()
         self.tokenizer = self.FullTokenizer(self.vocab_file, self.do_lower_case)
