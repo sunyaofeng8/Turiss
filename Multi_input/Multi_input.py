@@ -19,8 +19,8 @@ class MultiInput:
 
     # main function, return: model
     def getModel(self):
-        train_Y = self.ScoreToTensor(self.trainset['Score'].values)
-        test_Y = self.ScoreToTensor(self.testset['Score'].values)
+        train_Y = self.ScoreToTensor(self.trainset['NormalizedHelpfulness'].values)
+        test_Y = self.ScoreToTensor(self.testset['NormalizedHelpfulness'].values)
 
         if self.load:
             dic1 = self.Pkl2dic(self.name1)
@@ -60,7 +60,7 @@ class MultiInput:
         train_X = [x1, x2, x3, x4, x5]
         test_X = [X1, X2, X3, X4, X5]
         model = self.BuildModel(len(dic1), len(dic2), len(dic3), len(dic4), len(dic5))
-        history = model.fit(x=train_X, y=train_Y, epochs=100, validation_data=(test_X, test_Y), shuffle=
+        history = model.fit(x=train_X, y=train_Y, epochs=10, validation_data=(test_X, test_Y), shuffle=
         'steps_per_epoch')
 
         return model
