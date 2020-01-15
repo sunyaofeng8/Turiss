@@ -69,20 +69,22 @@ def MultiModalModel():
     model.summary()
     return model
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--load', action='store_true', default=false
+        '--load', default=None
     )
     parser.add_argument(
-        '--big', action='store_ture', default=false
+        '--big', default=None
     )
     parser.add_argument(
         '--epoch', type=int
     )
     args = parser.parse_args()
+    print(args)
 
-    if args.big:
+    if args.big != None:
         trainset = pd.read_csv('./data/train_set.csv')
         testset = pd.read_csv('./data/test_set.csv')
     else:
@@ -97,7 +99,7 @@ if __name__ == '__main__':
     checkpoints_dir = './checkpoints/'
     load_file = 'bert_model.h5'
 
-    if args.load:
+    if args.load != None:
         model.load_weights(checkpoints_dir+load_file)
 
     history = model.fit(x=train_X, y=train_Y, epochs = args.epochs, validation_data = (test_X, test_Y), shuffle='steps_per_epoch')
