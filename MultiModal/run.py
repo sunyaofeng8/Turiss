@@ -97,15 +97,16 @@ class LossHistory(keras.callbacks.Callback):
         self.score.append(logs.get('Score_accuracy'))
         self.help.append(logs.get('Helpfulness_accuracy'))
 
+        if logs.get('val_loss') != None:
+            self.val_loss.append(logs.get('val_loss'))
+            self.val_score.append(logs.get('val_Score_accuracy'))
+            self.val_help.append(logs.get('val_Helpfulness_accuracy'))
+
         if batch % 10 == 0:
-            print("|||||||||||| Batch %d ||||||||||||" % batch)
+            print("------------ Batch %d ---------" % batch)
             print(logs)
     
     def on_epoch_end(self, epoch, logs={}):
-        self.val_loss.append(logs.get('val_loss'))
-        self.val_score.append(logs.get('val_Score_accuracy'))
-        self.val_help.append(logs.get('val_Helpfulness_accuracy'))
-
         print("============= Epoch %d ==========" % epoch)
         print(logs)
 
