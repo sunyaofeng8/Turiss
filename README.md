@@ -8,6 +8,8 @@ ppt： `Turiss_pre.pdf`
 
 Dataset: https://www.kaggle.com/snap/amazon-fine-food-reviews
 
+BERT pretrained model: https://tfhub.dev/tensorflow/bert_en_uncased_L-12_H-768_A-12/1
+
 ## Usage
 
 The folder `./SingleModal` contains `DataClean.ipynb`, `Simple_LSTM.py`, and `Simple_BERT.py`. These baseline models are only based on comments embedding.
