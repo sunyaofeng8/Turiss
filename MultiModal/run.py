@@ -98,16 +98,15 @@ class LossHistory(keras.callbacks.Callback):
         self.score.append(logs.get('Score_accuracy'))
         self.help.append(logs.get('Helpfulness_accuracy'))
 
-        if logs.get('val_loss') != None:
-            self.val_loss.append(logs.get('val_loss'))
-            self.val_score.append(logs.get('val_Score_accuracy'))
-            self.val_help.append(logs.get('val_Helpfulness_accuracy'))
-
         if batch % 10 == 0:
             print("------------ Batch %d ---------" % batch)
             print(logs)
     
     def on_epoch_end(self, epoch, logs={}):
+        self.val_loss.append(logs.get('val_loss'))
+        self.val_score.append(logs.get('val_Score_accuracy'))
+        self.val_help.append(logs.get('val_Helpfulness_accuracy'))
+
         print("============= Epoch %d ==========" % epoch)
         print(logs)
 
@@ -175,11 +174,11 @@ if __name__ == '__main__':
     loss_history.Output(args.log)
 
     score_preds, helpfulness_preds = model.predict(test_X)
-    score_preds = score_preds.argmax(1)
-    helpfulness_preds = helpfulness_preds.argmax(1)
+    score_preds = score_preds.argmax(1) + 1
+    helpfulness_preds = helpfulness_preds.argmax(1) + 1
 
-    testset['score_preds'] = score_preds + 1
-    testset['helpfulness_preds'] = helpfulness_preds + 1
+    testset['score_preds'] = score_preds
+    testset['helpfulness_preds'] = helpfulness_preds
 
     score_truths = testset['Score'].values
     helpfulness_truths = testset['NormalizedHelpfulness'].values
