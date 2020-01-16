@@ -229,6 +229,7 @@ if __name__ == '__main__':
 
         Calc_F1(score_preds, score_truths, 'score')
 
-    testset.to_csv(r'res.csv', index=False)
+    resfp = 'res.' + args.model + '.csv'
+    testset.to_csv(resfp, index=False)
     model.save_weights(model_file)
 
