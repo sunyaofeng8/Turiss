@@ -28,7 +28,8 @@ def DatasetToTensor(df, model):
         ]
     elif model == 'SingleLSTM':
         X = df['TextID'].apply(convert)
-        print(type())
+        print(type(X))
+        print(X.shape)
 
         exit(0)
 
