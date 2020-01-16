@@ -115,10 +115,12 @@ class LossHistory(keras.callbacks.Callback):
         self.history = {}
 
         self.loss = []
+        self.acc = []
         self.score = []
         self.help = []
 
         self.val_loss = []
+        self.val_acc = []
         self.val_score = []
         self.val_help = []
     
@@ -127,6 +129,7 @@ class LossHistory(keras.callbacks.Callback):
 
     def on_batch_end(self, batch, logs={}):
         self.loss.append(logs.get('loss'))
+        self.acc.append(logs.get('accuracy'))
         self.score.append(logs.get('Score_accuracy'))
         self.help.append(logs.get('Helpfulness_accuracy'))
 
@@ -136,6 +139,7 @@ class LossHistory(keras.callbacks.Callback):
     
     def on_epoch_end(self, epoch, logs={}):
         self.val_loss.append(logs.get('val_loss'))
+        self.val_acc.append(logs.get('val_accuracy'))
         self.val_score.append(logs.get('val_Score_accuracy'))
         self.val_help.append(logs.get('val_Helpfulness_accuracy'))
 
@@ -144,11 +148,13 @@ class LossHistory(keras.callbacks.Callback):
 
     def Output(self, file):
         print(self.loss, file=file)
+        print(self.acc, file=file)
         print(self.score, file=file)
         print(self.help, file=file)
         print('\n', file=file)
 
         print(self.val_loss, file=file)
+        print(self.val_acc, file=file)
         print(self.val_score, file=file)
         print(self.val_help, file=file)
 
@@ -211,7 +217,7 @@ if __name__ == '__main__':
     def Calc_F1(preds, truths, name):
         F1 = f1_score(truths, preds, average=None)
         print(name, ' F1 Score:  ', F1)
-        #print(name, ' F1 Score:  ', F1, file = logfp)
+        print(name, ' F1 Score:  ', F1, file = logfp)
 
     if args.model == 'MultiModal':
         score_preds, helpfulness_preds = model.predict(test_X)
