@@ -111,7 +111,7 @@ class LossHistory(keras.callbacks.Callback):
         print(logs)
 
     def Output(self, filename):
-        if file == None:
+        if filename == None:
             print("Don't Save Logs")
             return
 
@@ -165,11 +165,11 @@ if __name__ == '__main__':
     
     loss_history = LossHistory()
     early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
-    save_model = keras.callbacks.ModelCheckpoint(model_file, monitor='val_loss', verbose=1, save_best_only=True, save_weights_only=True, mode='auto', save_freq=100)
+    save_model = keras.callbacks.ModelCheckpoint(model_file, monitor='val_loss', verbose=0, save_best_only=True, save_weights_only=True, mode='auto', save_freq=320)
 
     model.fit(x=train_X, y=train_Y, epochs = args.epoch, \
         validation_data = (test_X, test_Y), shuffle='steps_per_epoch', \
-            callbacks=[early_stop, loss_history, save_model], verbose=0, validation_freq = 100)
+            callbacks=[early_stop, loss_history, save_model], verbose=0)
 
     loss_history.Output(args.log)
 
