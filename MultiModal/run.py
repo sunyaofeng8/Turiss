@@ -164,23 +164,20 @@ def SingleLSTM():
     hidden_size = 128
 
     input1 = keras.Input(shape=(128, ), dtype=tf.float32, name='TextID')
-    score_out = keras.Sequential(
-        keras.layers.Embedding(Vocab_Size, hidden_size),
-        keras.layers.Bidirectional(keras.layers.LSTM(hidden_size)),
-        keras.layers.Dropout(0.2),
-        keras.layers.Dense(32, activation='relu'),
-        keras.layers.Dense(5, activation='softmax', name= 'Score')
-    )(input1)
 
-    help_out = keras.Sequential(
-        keras.layers.Embedding(Vocab_Size, hidden_size),
-        keras.layers.Bidirectional(keras.layers.LSTM(hidden_size)),
-        keras.layers.Dropout(0.2),
-        keras.layers.Dense(32, activation='relu'),
-        keras.layers.Dense(5, activation='softmax', name= 'Score')
-    )(input1)
+    x1 = keras.layers.Embedding(Vocab_Size, hidden_size)(input1)
+    x2 = keras.layers.Bidirectional(keras.layers.LSTM(hidden_size))(x1)
+    x3 = keras.layers.Dropout(0.2)(x2)
+    x4 = keras.layers.Dense(32, activation='relu')(x3)
+    x5 = keras.layers.Dense(5, activation='softmax', name= 'Score')(x4)
 
-    model = keras.Model(inputs=[input1], outputs=[score_out, help_out])
+    y1 = keras.layers.Embedding(Vocab_Size, hidden_size)(input1)
+    y2 = keras.layers.Bidirectional(keras.layers.LSTM(hidden_size))(y1)
+    y3 = keras.layers.Dropout(0.2)(y2)
+    y4 = keras.layers.Dense(32, activation='relu')(y3)
+    y5 = keras.layers.Dense(5, activation='softmax', name= 'Helpfulness')(y4)
+
+    model = keras.Model(inputs=[input1], outputs=[x5, y5])
     model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     model.summary()
 
@@ -279,7 +276,7 @@ if __name__ == '__main__':
         model = SingleBERT(args.lr)
     elif args.model == 'SingleLSTM':
         model = SingleLSTM()
-        
+
 
     model_file = './checkpoints/' + args.model + '.h5'
     if args.load != None:
@@ -317,4 +314,3 @@ if __name__ == '__main__':
     resfp = 'res.' + args.model + '.csv'
     testset.to_csv(resfp, index=False)
     model.save_weights(model_file)
-
