@@ -30,7 +30,7 @@ def DatasetToTensor(df):
 def MultiModalModel(lr):
     max_len = 128
     vocab_size = 1000
-    word_dim = 64
+    word_dim = 32
 
     input_id = tf.keras.layers.Input(shape=(max_len,), dtype=tf.int32, name='input_ID')
     input_mask = tf.keras.layers.Input(shape=(max_len,), dtype=tf.int32, name = 'input_mask')
