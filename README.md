@@ -6,6 +6,8 @@ Poster: `poster.pdf`
 
 ppt： `Turiss_pre.pdf`
 
+Dataset: https://www.kaggle.com/snap/amazon-fine-food-reviews
+
 ## Usage
 
 The folder `./SingleModal` contains `DataClean.ipynb`, `Simple_LSTM.py`, and `Simple_BERT.py`. These baseline models are only based on comments embedding.
