@@ -127,7 +127,7 @@ if __name__ == '__main__':
             
             self.count += 1
             if self.count % 2 == 0:
-                print(count, logs)
+                print(self.count, logs)
 
         def Output(self, filename):
             file = open(filename, 'w')
