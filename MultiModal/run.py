@@ -118,13 +118,15 @@ if __name__ == '__main__':
             self.count = 0
 
         def on_batch_end(self, batch, logs={}):
+            '''
             self.acc.append(logs.get('acc'))
             self.loss.append(logs.get('loss'))
             self.val_acc.append(logs.get('val_acc'))
             self.val_loss.append(logs.get('val_loss'))
+            '''
 
             self.count += 1
-            if self.count % 1 == 0:
+            if self.count % 10 == 0:
                 print(logs.keys)
         
         def Output(self, filename):
