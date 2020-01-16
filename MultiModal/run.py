@@ -192,5 +192,5 @@ if __name__ == '__main__':
     Calc_F1(helpfulness_preds, helpfulness_truths, 'help')
 
     testset.to_csv(r'res.csv', index=False)
-    model.save_weights(checkpoints_dir + 'bert_model.h5')
+    model.save_weights(model_file)
 
