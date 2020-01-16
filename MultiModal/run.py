@@ -16,7 +16,7 @@ def DatasetToTensor(df, model):
     convert = lambda s : (list(map(int, s[1:-1].split(','))))
     max_len = 128
 
-    if model == 'MultiModal':
+    if model == 'BERTMulModMulTask' or model == 'BERTMulMod':
         X = [tf.convert_to_tensor(df['Normalized_Product_ID'], dtype=tf.int32),
             tf.convert_to_tensor(df['Normalized_User_ID'], dtype=tf.int32),
             tf.convert_to_tensor(df['Normalized_Time_ID'], dtype=tf.int32),
@@ -24,12 +24,6 @@ def DatasetToTensor(df, model):
             tf.convert_to_tensor(df['input_masks'].apply(convert), dtype=tf.int32),
             tf.convert_to_tensor(df['input_segments'].apply(convert), dtype=tf.int32),
         ]
-        Y = [tf.convert_to_tensor(df['Score'] - 1, dtype=tf.int32),
-            tf.convert_to_tensor(df['NormalizedHelpfulness'] - 1, dtype=tf.int32),
-        ]
-
-        return X, Y
-
     elif model == 'SingleLSTM':
         X = df['TextID'].apply(convert).values
         X = [x[:max_len] for x in X]
@@ -38,15 +32,20 @@ def DatasetToTensor(df, model):
         X = [x + [4500] * (max_len - len(x)) for x in X]
         X = np.array(X)
         X = tf.convert_to_tensor(X, dtype=tf.float32)
+    elif model == 'SingleBERT':
+        X = [tf.convert_to_tensor(df['input_ids'].apply(convert), dtype=tf.int32),
+            tf.convert_to_tensor(df['input_masks'].apply(convert), dtype=tf.int32),
+            tf.convert_to_tensor(df['input_segments'].apply(convert), dtype=tf.int32),
+        ]
 
-        Y = tf.convert_to_tensor(df['Score'] - 1, dtype=tf.int32)
+    Y = [tf.convert_to_tensor(df['Score'] - 1, dtype=tf.int32),
+        tf.convert_to_tensor(df['NormalizedHelpfulness'] - 1, dtype=tf.int32),
+    ]
 
-        return X, Y
-
-    
+    return X, Y
 
 
-def MultiModalModel(lr):
+def BERTMulModMulTask(lr):
     max_len = 128
     vocab_size = 1000
     word_dim = 32
@@ -76,16 +75,6 @@ def MultiModalModel(lr):
     a3 = keras.layers.Dense(5, activation='softmax', name='Score')(merge2)
     b3 = keras.layers.Dense(5, activation='softmax', name = 'Helpfulness')(merge2)
 
-    '''
-    a1 = keras.layers.Dense(16, activation='relu')(merge2)
-    a2 = keras.layers.Dropout(0.2)(a1)
-    a3 = keras.layers.Dense(5, activation='softmax', name='Score')(a2)
-
-    b1 = keras.layers.Dense(64, activation='relu')(merge2)
-    b2 = keras.layers.Dropout(0.2)(b1)
-    b3 = keras.layers.Dense(5, activation='softmax', name = 'Helpfulness')(b2)
-    '''
-
     opt = Adam(lr=lr)
     model = keras.Model(inputs=[input1, input2, input3, input_id, input_mask, input_segment], \
         outputs=[a3, b3])
@@ -95,18 +84,103 @@ def MultiModalModel(lr):
     return model
 
 
-def SingleLSTMModel():
+def BERTMulMod(lr):
+    max_len = 128
+    vocab_size = 1000
+    word_dim = 32
+
+    input_id = tf.keras.layers.Input(shape=(max_len,), dtype=tf.int32, name='input_ID')
+    input_mask = tf.keras.layers.Input(shape=(max_len,), dtype=tf.int32, name = 'input_mask')
+    input_segment = tf.keras.layers.Input(shape=(max_len,), dtype=tf.int32, name = 'input_seqment')
+
+    bert_layer1 = hub.KerasLayer("../bert_layer", trainable=True)
+    bert_layer2 = hub.KerasLayer("../bert_layer", trainable=True)
+    pooled_output1, _ = bert_layer1([input_id, input_mask, input_segment])
+    pooled_output2, _ = bert_layer2([input_id, input_mask, input_segment])
+
+    input1 = keras.Input(shape=(1,), dtype=tf.float32, name='Product_ID')
+    e1 = keras.layers.Embedding(vocab_size, word_dim, embeddings_initializer=tf.random_normal_initializer)(
+        input1)
+    p1 = keras.layers.Embedding(vocab_size, word_dim, embeddings_initializer=tf.random_normal_initializer)(
+        input1)
+
+    input2 = keras.Input(shape=(1,), dtype=tf.float32, name='User_ID')
+    e2 = keras.layers.Embedding(vocab_size, word_dim, embeddings_initializer=tf.random_normal_initializer)(
+        input2)
+    p2 = keras.layers.Embedding(vocab_size, word_dim, embeddings_initializer=tf.random_normal_initializer)(
+        input2)
+
+    input3 = keras.Input(shape=(1,), dtype=tf.float32, name='Time_ID')
+    e3 = keras.layers.Embedding(vocab_size, word_dim, embeddings_initializer=tf.random_normal_initializer)(
+        input3)
+    p3 = keras.layers.Embedding(vocab_size, word_dim, embeddings_initializer=tf.random_normal_initializer)(
+        input3)
+    
+    merge1 = keras.layers.Flatten()(keras.layers.concatenate([e1, e2, e3]))
+    merge2 = keras.layers.concatenate([merge1, pooled_output1])
+
+    merge3 = keras.layers.Flatten()(keras.layers.concatenate([p1, p2, p3]))
+    merge4 = keras.layers.concatenate([merge3, pooled_output2])
+
+    a3 = keras.layers.Dense(5, activation='softmax', name='Score')(merge2)
+    b3 = keras.layers.Dense(5, activation='softmax', name = 'Helpfulness')(merge4)
+
+    opt = Adam(lr=lr)
+    model = keras.Model(inputs=[input1, input2, input3, input_id, input_mask, input_segment], \
+        outputs=[a3, b3])
+    model.compile(loss='sparse_categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
+
+    model.summary()
+    return model
+
+def SingleBERT(lr):
+    max_len = 128
+    vocab_size = 1000
+    word_dim = 32
+
+    input_id = tf.keras.layers.Input(shape=(max_len,), dtype=tf.int32, name='input_ID')
+    input_mask = tf.keras.layers.Input(shape=(max_len,), dtype=tf.int32, name = 'input_mask')
+    input_segment = tf.keras.layers.Input(shape=(max_len,), dtype=tf.int32, name = 'input_seqment')
+
+    bert_layer1 = hub.KerasLayer("../bert_layer", trainable=True)
+    bert_layer2 = hub.KerasLayer("../bert_layer", trainable=True)
+    pooled_output1, _ = bert_layer1([input_id, input_mask, input_segment])
+    pooled_output2, _ = bert_layer2([input_id, input_mask, input_segment])
+
+    a3 = keras.layers.Dense(5, activation='softmax', name='Score')(pooled_output1)
+    b3 = keras.layers.Dense(5, activation='softmax', name = 'Helpfulness')(pooled_output2)
+
+    opt = Adam(lr=lr)
+    model = keras.Model(inputs=[input_id, input_mask, input_segment], \
+        outputs=[a3, b3])
+    model.compile(loss='sparse_categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
+
+    model.summary()
+    return model
+
+
+def SingleLSTM():
     Vocab_Size = 5000
     hidden_size = 128
 
     input1 = keras.Input(shape=(128, ), dtype=tf.float32, name='TextID')
-    x1 = keras.layers.Embedding(Vocab_Size, hidden_size)(input1)
-    x2 = keras.layers.Bidirectional(keras.layers.LSTM(hidden_size))(x1)
-    x3 = keras.layers.Dropout(0.2)(x2)
-    x4 = keras.layers.Dense(32, activation='relu')(x3)
-    x5 = keras.layers.Dense(5, activation='softmax', name= 'Score')(x4)
+    score_out = keras.Sequential(
+        keras.layers.Embedding(Vocab_Size, hidden_size),
+        keras.layers.Bidirectional(keras.layers.LSTM(hidden_size)),
+        keras.layers.Dropout(0.2),
+        keras.layers.Dense(32, activation='relu'),
+        keras.layers.Dense(5, activation='softmax', name= 'Score')
+    )(input1)
 
-    model = keras.Model(inputs=[input1], outputs=[x5])
+    help_out = keras.Sequential(
+        keras.layers.Embedding(Vocab_Size, hidden_size),
+        keras.layers.Bidirectional(keras.layers.LSTM(hidden_size)),
+        keras.layers.Dropout(0.2),
+        keras.layers.Dense(32, activation='relu'),
+        keras.layers.Dense(5, activation='softmax', name= 'Score')
+    )(input1)
+
+    model = keras.Model(inputs=[input1], outputs=[score_out, help_out])
     model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     model.summary()
 
@@ -179,7 +253,8 @@ if __name__ == '__main__':
         '--lr', type=float, default=0.00001
     )
     parser.add_argument(
-        '--model', type=str
+        '--model', type=str,
+            choices=['SingleLSTM', 'SingleBERT', 'BERTMulMod', 'BERTMulModMulTask']
     )
     args = parser.parse_args()
     print(args)
@@ -196,13 +271,15 @@ if __name__ == '__main__':
     train_X, train_Y = DatasetToTensor(trainset, args.model)
     test_X, test_Y = DatasetToTensor(testset, args.model)
 
-    if args.model == 'MultiModal':
-        model = MultiModalModel(args.lr)
+    if args.model == 'BERTMulModMulTask':
+        model = BERTMulModMulTask(args.lr)
+    elif args.model == 'BERTMulMod':
+        model = BERTMulMod(args.lr)
+    elif args.model == 'SingleBERT':
+        model = SingleBERT(args.lr)
     elif args.model == 'SingleLSTM':
-        model = SingleLSTMModel()
-    else:
-        print("Model Name Error")
-        assert(0)
+        model = SingleLSTM()
+        
 
     model_file = './checkpoints/' + args.model + '.h5'
     if args.load != None:
@@ -224,27 +301,18 @@ if __name__ == '__main__':
         print(name, ' F1 Score:  ', F1)
         print(name, ' F1 Score:  ', F1, file = logfp)
 
-    if args.model == 'MultiModal':
-        score_preds, helpfulness_preds = model.predict(test_X)
-        score_preds = score_preds.argmax(1) + 1
-        helpfulness_preds = helpfulness_preds.argmax(1) + 1
+    score_preds, helpfulness_preds = model.predict(test_X)
+    score_preds = score_preds.argmax(1) + 1
+    helpfulness_preds = helpfulness_preds.argmax(1) + 1
 
-        testset['score_preds'] = score_preds
-        testset['helpfulness_preds'] = helpfulness_preds
+    testset['score_preds'] = score_preds
+    testset['helpfulness_preds'] = helpfulness_preds
 
-        score_truths = testset['Score'].values
-        helpfulness_truths = testset['NormalizedHelpfulness'].values
+    score_truths = testset['Score'].values
+    helpfulness_truths = testset['NormalizedHelpfulness'].values
 
-        Calc_F1(score_preds, score_truths, 'score')
-        Calc_F1(helpfulness_preds, helpfulness_truths, 'help')
-    else:
-        score_preds = model.predict(test_X)
-        score_preds = score_preds.argmax(1) + 1
-
-        testset['score_preds'] = score_preds
-        score_truths = testset['Score'].values
-
-        Calc_F1(score_preds, score_truths, 'score')
+    Calc_F1(score_preds, score_truths, 'score')
+    Calc_F1(helpfulness_preds, helpfulness_truths, 'help')
 
     resfp = 'res.' + args.model + '.csv'
     testset.to_csv(resfp, index=False)
