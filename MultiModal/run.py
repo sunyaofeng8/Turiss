@@ -26,7 +26,7 @@ def DatasetToTensor(df, model):
         Y = [tf.convert_to_tensor(df['Score'] - 1, dtype=tf.int32),
             tf.convert_to_tensor(df['NormalizedHelpfulness'] - 1, dtype=tf.int32),
         ]
-    elif model == 'SingLSTM':
+    elif model == 'SingleLSTM':
         X = df['TextID'].apply(convert)
         print(type())
 
@@ -183,7 +183,7 @@ if __name__ == '__main__':
 
     if args.model == 'MultiModal':
         model = MultiModalModel(args.lr)
-    elif args.model == 'SingLSTM':
+    elif args.model == 'SingleLSTM':
         model = SingleLSTMModel()
     else:
         print("Model Name Error")
