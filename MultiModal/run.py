@@ -16,7 +16,7 @@ def DatasetToTensor(df, model):
     convert = lambda s : (list(map(int, s[1:-1].split(','))))
     max_len = 128
 
-    if model == 'MultiModel':
+    if model == 'MultiModal':
         X = [tf.convert_to_tensor(df['Normalized_Product_ID'], dtype=tf.int32),
             tf.convert_to_tensor(df['Normalized_User_ID'], dtype=tf.int32),
             tf.convert_to_tensor(df['Normalized_Time_ID'], dtype=tf.int32),
@@ -40,7 +40,7 @@ def DatasetToTensor(df, model):
         X = tf.convert_to_tensor(X, dtype=tf.float32)
 
         Y = tf.convert_to_tensor(df['Score'] - 1, dtype=tf.int32)
-        
+
         return X, Y
 
     
