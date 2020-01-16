@@ -98,7 +98,7 @@ if __name__ == '__main__':
         trainset = pd.read_csv('./data/local_train_set.csv')
         testset = pd.read_csv('./data/local_test_set.csv')
 
-    train_X, train_Y = DataFrameToDataset(trainset)
+    train_X, train_Y = DatasetToTensor(trainset)
     test_X, test_Y = DatasetToTensor(testset)
 
     model = MultiModalModel(args.lr)
