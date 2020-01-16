@@ -11,7 +11,7 @@ from tensorflow.keras.optimizers import Adam
 import argparse
 
 
-def DataFrameToTensor(df):
+def DatasetToTensor(df):
     convert = lambda s : (list(map(int, s[1:-1].split(','))))
     X = [tf.convert_to_tensor(df['Normalized_Product_ID'], dtype=tf.int32),
         tf.convert_to_tensor(df['Normalized_User_ID'], dtype=tf.int32),
