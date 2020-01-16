@@ -111,30 +111,45 @@ if __name__ == '__main__':
 
     class LossHistory(keras.callbacks.Callback):
         def on_train_begin(self, logs={}):
-            print("===== Train Begin =====")
+            print("================ Train Begin ===============")
 
-            self.acc = []
+            self.history = {}
+
             self.loss = []
-            self.val_acc = []
+            self.score = []
+            self.help = []
+
             self.val_loss = []
-            self.count = 0
+            self.val_score = []
+            self.val_help = []
 
         def on_batch_end(self, batch, logs={}):
-            self.acc.append(logs.get('acc'))
             self.loss.append(logs.get('loss'))
-            self.val_acc.append(logs.get('val_acc'))
+            self.score.append(logs.get('Score_accuracy'))
+            self.help.append(logs.get('Helpfulness_loss'))
+
+            if batch % 10 == 0:
+                print("----- Batch %d -----" % batch)
+                print(logs)
+        
+        def on_epoch_end(self, epoch, logs={}):
             self.val_loss.append(logs.get('val_loss'))
-            
-            self.count += 1
-            if self.count % 2 == 0:
-                print(self.count, logs)
+            self.val_score.append(logs.get('val_Score_accuracy'))
+            self.val_help.append(logs.get('val_Helpfulness_loss'))
+
+            print("======= Epoch %d =======" % epoch)
+            print(logs)
 
         def Output(self, filename):
             file = open(filename, 'w')
-            print(self.acc, file=file)
+
             print(self.loss, file=file)
-            print(self.val_acc, file=file)
+            print(self.score, file=file)
+            print(self.help, file=file)
+            
             print(self.val_loss, file=file)
+            print(self.val_score, file=file)
+            print(self.val_help, file=file)
 
     loss_history = LossHistory()    
     early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
