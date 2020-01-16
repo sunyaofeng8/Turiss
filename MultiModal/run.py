@@ -122,11 +122,11 @@ if __name__ == '__main__':
             self.loss.append(logs.get('loss'))
             self.val_acc.append(logs.get('val_acc'))
             self.val_loss.append(logs.get('val_loss'))
-            '''
+            
             self.count += 1
             if self.count % 10 == 0:
                 print(logs.keys)
-            '''
+            
 
         def Output(self, filename):
             file = open(filename, 'w')
@@ -140,7 +140,7 @@ if __name__ == '__main__':
 
     model.fit(x=train_X, y=train_Y, epochs = args.epoch, \
         validation_data = (test_X, test_Y), shuffle='steps_per_epoch', \
-            callbacks=[early_stop, loss_history])
+            callbacks=[early_stop, loss_history], verbose=0)
 
     loss_history.Output(args.log)
 
