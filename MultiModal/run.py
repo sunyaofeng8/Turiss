@@ -9,7 +9,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 
 import argparse
-import sklearn.metrics.f1_score
+from sklearn.metrics import f1_score
 
 
 def DatasetToTensor(df):
