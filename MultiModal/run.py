@@ -27,7 +27,7 @@ def DatasetToTensor(df, model):
             tf.convert_to_tensor(df['NormalizedHelpfulness'] - 1, dtype=tf.int32),
         ]
     elif model == 'SingleLSTM':
-        X = df['TextID'].apply(convert)
+        X = df['TextID'].apply(convert).values
         print(type(X))
         print(X.shape)
 
