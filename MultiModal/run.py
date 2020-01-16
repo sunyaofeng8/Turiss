@@ -139,7 +139,7 @@ if __name__ == '__main__':
         '--epoch', type=int
     )
     parser.add_argument(
-        '--lr', type=float, default=0.0001
+        '--lr', type=float, default=0.00001
     )
     parser.add_argument(
         '--log', type=str, default=None
