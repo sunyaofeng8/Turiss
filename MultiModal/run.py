@@ -12,18 +12,27 @@ import argparse
 from sklearn.metrics import f1_score
 
 
-def DatasetToTensor(df):
+def DatasetToTensor(df, model):
     convert = lambda s : (list(map(int, s[1:-1].split(','))))
-    X = [tf.convert_to_tensor(df['Normalized_Product_ID'], dtype=tf.int32),
-        tf.convert_to_tensor(df['Normalized_User_ID'], dtype=tf.int32),
-        tf.convert_to_tensor(df['Normalized_Time_ID'], dtype=tf.int32),
-        tf.convert_to_tensor(df['input_ids'].apply(convert), dtype=tf.int32),
-        tf.convert_to_tensor(df['input_masks'].apply(convert), dtype=tf.int32),
-        tf.convert_to_tensor(df['input_segments'].apply(convert), dtype=tf.int32),
-    ]
-    Y = [tf.convert_to_tensor(df['Score'] - 1, dtype=tf.int32),
-        tf.convert_to_tensor(df['NormalizedHelpfulness'] - 1, dtype=tf.int32),
-    ]
+
+    if model == 'MultiModel':
+        X = [tf.convert_to_tensor(df['Normalized_Product_ID'], dtype=tf.int32),
+            tf.convert_to_tensor(df['Normalized_User_ID'], dtype=tf.int32),
+            tf.convert_to_tensor(df['Normalized_Time_ID'], dtype=tf.int32),
+            tf.convert_to_tensor(df['input_ids'].apply(convert), dtype=tf.int32),
+            tf.convert_to_tensor(df['input_masks'].apply(convert), dtype=tf.int32),
+            tf.convert_to_tensor(df['input_segments'].apply(convert), dtype=tf.int32),
+        ]
+        Y = [tf.convert_to_tensor(df['Score'] - 1, dtype=tf.int32),
+            tf.convert_to_tensor(df['NormalizedHelpfulness'] - 1, dtype=tf.int32),
+        ]
+    elif model == 'SingLSTM':
+        X = df['TextID'].apply(convert)
+        print(type())
+
+        exit(0)
+
+
     return X, Y
 
 
@@ -76,6 +85,25 @@ def MultiModalModel(lr):
     return model
 
 
+def SingleLSTMModel():
+    Vocab_Size = 5000
+    hidden_size = 128
+
+    model = keras.Sequential([
+        keras.layers.Embedding(Vocab_Size, hidden_size),
+        keras.layers.Bidirectional(keras.layers.LSTM(hidden_size)),
+        keras.layers.Dropout(0.2),
+        keras.layers.Dense(32, activation='relu'),
+        keras.layers.Dropout(0.2),
+        keras.layers.Dense(5, activation='softmax')
+    ])
+
+    model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.summary()
+
+    return model
+
+
 class LossHistory(keras.callbacks.Callback):
     def on_train_begin(self, logs={}):
         print("====================== Train Begin ===================")
@@ -110,13 +138,7 @@ class LossHistory(keras.callbacks.Callback):
         print("============= Epoch %d ==========" % epoch)
         print(logs)
 
-    def Output(self, filename):
-        if filename == None:
-            print("Don't Save Logs")
-            return
-
-        file = open(filename, 'w')
-
+    def Output(self, file):
         print(self.loss, file=file)
         print(self.score, file=file)
         print(self.help, file=file)
@@ -142,7 +164,7 @@ if __name__ == '__main__':
         '--lr', type=float, default=0.00001
     )
     parser.add_argument(
-        '--log', type=str, default=None
+        '--model', type=str
     )
     args = parser.parse_args()
     print(args)
@@ -154,12 +176,18 @@ if __name__ == '__main__':
         trainset = pd.read_csv('./data/local_train_set.csv')
         testset = pd.read_csv('./data/local_test_set.csv')
 
-    train_X, train_Y = DatasetToTensor(trainset)
-    test_X, test_Y = DatasetToTensor(testset)
+    train_X, train_Y = DatasetToTensor(trainset, args.model)
+    test_X, test_Y = DatasetToTensor(testset, args.model)
 
-    model = MultiModalModel(args.lr)
-    model_file = './checkpoints/bert_model.h5'
+    if args.model == 'MultiModal':
+        model = MultiModalModel(args.lr)
+    elif args.model == 'SingLSTM':
+        model = SingleLSTMModel()
+    else:
+        print("Model Name Error")
+        assert(0)
 
+    model_file = './checkpoints/' + args.model + '.h5'
     if args.load != None:
         model.load_weights(model_file)
     
@@ -171,24 +199,35 @@ if __name__ == '__main__':
         validation_data = (test_X, test_Y), shuffle='steps_per_epoch', \
             callbacks=[early_stop, loss_history, save_model], verbose=0)
 
-    loss_history.Output(args.log)
-
-    score_preds, helpfulness_preds = model.predict(test_X)
-    score_preds = score_preds.argmax(1) + 1
-    helpfulness_preds = helpfulness_preds.argmax(1) + 1
-
-    testset['score_preds'] = score_preds
-    testset['helpfulness_preds'] = helpfulness_preds
-
-    score_truths = testset['Score'].values
-    helpfulness_truths = testset['NormalizedHelpfulness'].values
+    logfp = open('log.' + args.model + '.txt', 'w')
+    loss_history.Output(logfp)
 
     def Calc_F1(preds, truths, name):
         F1 = f1_score(truths, preds, average=None)
         print(name, ' F1 Score:  ', F1)
+        print(name, ' F1 Score:  ', F1, file = logfp)
 
-    Calc_F1(score_preds, score_truths, 'score')
-    Calc_F1(helpfulness_preds, helpfulness_truths, 'help')
+    if args.model == 'MultiModal':
+        score_preds, helpfulness_preds = model.predict(test_X)
+        score_preds = score_preds.argmax(1) + 1
+        helpfulness_preds = helpfulness_preds.argmax(1) + 1
+
+        testset['score_preds'] = score_preds
+        testset['helpfulness_preds'] = helpfulness_preds
+
+        score_truths = testset['Score'].values
+        helpfulness_truths = testset['NormalizedHelpfulness'].values
+
+        Calc_F1(score_preds, score_truths, 'score')
+        Calc_F1(helpfulness_preds, helpfulness_truths, 'help')
+    else:
+        score_preds = model.predict(test_X)
+        score_preds = score_preds.argmax(1) + 1
+
+        testset['score_preds'] = score_preds
+        score_truths = testset['Score'].values
+
+        Calc_F1(score_preds, score_truths, 'score')
 
     testset.to_csv(r'res.csv', index=False)
     model.save_weights(model_file)
