@@ -1,53 +1,16 @@
-# No Code
+# Comment Grading for Recommendation System
 
-No code is the best way to write secure and reliable applications. Write nothing; deploy nowhere.
+This is the website of our group project "comment grading for recommendation" for Google ML Camp 2020. This repository contains all the code we used for data cleaning, neural network architecture, and result analysis. You can easily download and deploy it on your local computer for testing ^_^
 
-## Getting Started
+## Description
 
-Start by not writing any code.
+The folder './SingleModal' contains 'DataClean.ipynb', 'Simple_LSTM.py', and 'Simple_BERT.py'. These baseline models are only based on comments embedding.
 
-```
+The folder './Multi_Input' contains 'dic_XXX.pkl', which are used for dropping out the rare IDs(user, product, and time) and remapping the rest to numbers.
 
-```
+The folder './MultiModal' contains 'run.py'. You can use it to test the 'BERTMulMod' model and the 'BERTMulModMulTask' model. The usage is 'run.py [--epoch X] [--big 1] [--model choice=['SingleLSTM', 'SingleBERT', 'BERTMulMod', 'BERTMulModMulTask']]'. The logs and result files are also in this folder.
 
-This is just an example application, but imagine it doing anything you want. Adding new features is easy too:
+The folder './Stat' contains the statistic-related codes used for the analysis of recommendation system.
 
-```
+The folder './img_folder' contains the images that visualized the performance of our neural networks and the results analysis.
 
-```
-
-The possibilities are endless.
-
-### Building the Application
-
-Now that you have not done anything it's time to build your application:
-
-```
-
-```
-
-Yep. That's it. You should see the following output:
-
-```
-
-```
-
-### Deploying
-
-While you still have not done anything it's time to deploy your application. By running the following command you can deploy your application absolutely nowhere.
-
-```
-
-```
-
-It's that simple. And when it comes time to scale the application, all you have to do is:
-
-```
-
-```
-
-I know right?
-
-## Contributing
-
-You don't.
