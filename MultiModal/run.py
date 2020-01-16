@@ -133,7 +133,7 @@ class LossHistory(keras.callbacks.Callback):
         self.score.append(logs.get('Score_accuracy'))
         self.help.append(logs.get('Helpfulness_accuracy'))
 
-        if batch % 5 == 0:
+        if batch % 10 == 0:
             print("------------ Batch %d ---------" % batch)
             print(logs)
     
