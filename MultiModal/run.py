@@ -27,6 +27,9 @@ def DatasetToTensor(df, model):
         Y = [tf.convert_to_tensor(df['Score'] - 1, dtype=tf.int32),
             tf.convert_to_tensor(df['NormalizedHelpfulness'] - 1, dtype=tf.int32),
         ]
+
+        return X, Y
+
     elif model == 'SingleLSTM':
         X = df['TextID'].apply(convert).values
         X = [x[:max_len] for x in X]
@@ -37,8 +40,10 @@ def DatasetToTensor(df, model):
         X = tf.convert_to_tensor(X, dtype=tf.float32)
 
         Y = tf.convert_to_tensor(df['Score'] - 1, dtype=tf.int32)
+        
+        return X, Y
 
-    return X, Y
+    
 
 
 def MultiModalModel(lr):
