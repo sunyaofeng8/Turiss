@@ -133,6 +133,7 @@ def BERTMulMod(lr):
     model.summary()
     return model
 
+
 def SingleBERT(lr):
     max_len = 128
     vocab_size = 1000
