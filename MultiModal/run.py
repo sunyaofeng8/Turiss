@@ -14,6 +14,7 @@ from sklearn.metrics import f1_score
 
 def DatasetToTensor(df, model):
     convert = lambda s : (list(map(int, s[1:-1].split(','))))
+    max_len = 128
 
     if model == 'MultiModel':
         X = [tf.convert_to_tensor(df['Normalized_Product_ID'], dtype=tf.int32),
@@ -28,11 +29,14 @@ def DatasetToTensor(df, model):
         ]
     elif model == 'SingleLSTM':
         X = df['TextID'].apply(convert).values
-        print(type(X))
-        print(X.shape)
+        X = [x[:max_len] for x in X]
 
-        exit(0)
+        max_len = max([len(x) for x in X])
+        X = [x + [4500] * (max_len - len(x)) for x in X]
+        X = np.array(X)
+        X = tf.convert_to_tensor(X, dtype=tf.float32)
 
+        Y = tf.convert_to_tensor(df['Score'] - 1, dtype=tf.int32)
 
     return X, Y
 
@@ -90,15 +94,14 @@ def SingleLSTMModel():
     Vocab_Size = 5000
     hidden_size = 128
 
-    model = keras.Sequential([
-        keras.layers.Embedding(Vocab_Size, hidden_size),
-        keras.layers.Bidirectional(keras.layers.LSTM(hidden_size)),
-        keras.layers.Dropout(0.2),
-        keras.layers.Dense(32, activation='relu'),
-        keras.layers.Dropout(0.2),
-        keras.layers.Dense(5, activation='softmax')
-    ])
+    input1 = keras.Input(shape=(128, ), dtype=tf.float32, name='TextID')
+    x1 = keras.layers.Embedding(Vocab_Size, hidden_size)(input1)
+    x2 = keras.layers.Bidirectional(keras.layers.LSTM(hidden_size))(x1)
+    x3 = keras.layers.Dropout(0.2)(x2)
+    x4 = keras.layers.Dense(32, activation='relu')(x3)
+    x5 = keras.layers.Dense(5, activation='softmax', name= 'Score')(x4)
 
+    model = keras.Model(inputs=[input1], outputs=[x5])
     model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     model.summary()
 
@@ -127,7 +130,7 @@ class LossHistory(keras.callbacks.Callback):
         self.score.append(logs.get('Score_accuracy'))
         self.help.append(logs.get('Helpfulness_accuracy'))
 
-        if batch % 10 == 0:
+        if batch % 5 == 0:
             print("------------ Batch %d ---------" % batch)
             print(logs)
     
@@ -208,7 +211,7 @@ if __name__ == '__main__':
     def Calc_F1(preds, truths, name):
         F1 = f1_score(truths, preds, average=None)
         print(name, ' F1 Score:  ', F1)
-        print(name, ' F1 Score:  ', F1, file = logfp)
+        #print(name, ' F1 Score:  ', F1, file = logfp)
 
     if args.model == 'MultiModal':
         score_preds, helpfulness_preds = model.predict(test_X)
