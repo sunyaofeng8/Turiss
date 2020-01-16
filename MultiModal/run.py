@@ -118,17 +118,16 @@ if __name__ == '__main__':
             self.count = 0
 
         def on_batch_end(self, batch, logs={}):
-            '''
             self.acc.append(logs.get('acc'))
             self.loss.append(logs.get('loss'))
             self.val_acc.append(logs.get('val_acc'))
             self.val_loss.append(logs.get('val_loss'))
             '''
-
             self.count += 1
             if self.count % 10 == 0:
                 print(logs.keys)
-        
+            '''
+
         def Output(self, filename):
             file = open(filename, 'w')
             print(self.acc, file=file)
@@ -143,7 +142,7 @@ if __name__ == '__main__':
         validation_data = (test_X, test_Y), shuffle='steps_per_epoch', \
             callbacks=[early_stop, loss_history])
 
-    loss_history.Output(arg.log)
+    loss_history.Output(args.log)
 
     score_preds, helpfulness_preds = model.predict(test_X)
     score_preds = score_preds.argmax(1)
