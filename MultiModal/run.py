@@ -111,6 +111,8 @@ if __name__ == '__main__':
 
     class LossHistory(keras.callbacks.Callback):
         def on_train_begin(self, logs={}):
+            print("===== Train Begin =====")
+
             self.acc = []
             self.loss = []
             self.val_acc = []
@@ -124,9 +126,8 @@ if __name__ == '__main__':
             self.val_loss.append(logs.get('val_loss'))
             
             self.count += 1
-            if self.count % 10 == 0:
-                print(logs.keys)
-            
+            if self.count % 2 == 0:
+                print(count, logs)
 
         def Output(self, filename):
             file = open(filename, 'w')
