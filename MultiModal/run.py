@@ -115,15 +115,17 @@ if __name__ == '__main__':
             self.loss = []
             self.val_acc = []
             self.val_loss = []
-        '''
+            self.count = 0
+
         def on_batch_end(self, batch, logs={}):
-            self.losses.append(logs.get('loss'))
-        '''
-        def on_epoch_end(self, epoch, logs={}):
             self.acc.append(logs.get('acc'))
             self.loss.append(logs.get('loss'))
             self.val_acc.append(logs.get('val_acc'))
             self.val_loss.append(logs.get('val_loss'))
+
+            self.count += 1
+            if self.count % 1 == 0:
+                print(logs.keys)
         
         def Output(self, filename):
             file = open(filename, 'w')
