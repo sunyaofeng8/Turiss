@@ -9,6 +9,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 
 import argparse
+import sklearn.metrics.f1_score
 
 
 def DatasetToTensor(df):
@@ -165,7 +166,7 @@ if __name__ == '__main__':
     
     loss_history = LossHistory()
     early_stop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
-    save_model = keras.callbacks.ModelCheckpoint(model_file, monitor='val_loss', verbose=0, save_best_only=True, save_weights_only=True, mode='auto', save_freq=320)
+    save_model = keras.callbacks.ModelCheckpoint(model_file, monitor='val_loss', verbose=0, save_best_only=True, save_weights_only=True, mode='auto')
 
     model.fit(x=train_X, y=train_Y, epochs = args.epoch, \
         validation_data = (test_X, test_Y), shuffle='steps_per_epoch', \
