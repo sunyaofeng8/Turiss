@@ -176,6 +176,8 @@ if __name__ == '__main__':
         trainset = pd.read_csv('./data/local_train_set.csv')
         testset = pd.read_csv('./data/local_test_set.csv')
 
+    print("(trainset size : %d, testset size : %d)" % (len(trainset), len(testset)))
+
     train_X, train_Y = DatasetToTensor(trainset, args.model)
     test_X, test_Y = DatasetToTensor(testset, args.model)
 
