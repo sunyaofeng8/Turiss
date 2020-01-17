@@ -18,7 +18,8 @@ The folder `./Multi_Input` contains `dic_XXX.pkl`, which are used for dropping o
 
 The folder `./MultiModal` contains `run.py`. You can use it to test the `BERTMulMod` model and the `BERTMulModMulTask` model. The usage is `run.py [--epoch X] [--big 1] [--model choice['SingleLSTM', 'SingleBERT', 'BERTMulMod' , 'BERTMulModMulTask']]`. The logs and result files are also in this folder.
 
-The folder `./Stat` contains the statistic-related codes used for the analysis of recommendation system.
+The folder `./Stat` contains the statistic-related codes used for the analysis of recommendation systems.
 
-The folder `./img_folder` contains the images that visualized the performance of our neural networks and the results analysis.
+The folder `./img_folder` contains the images that visualized the performance of our neural networks and ranking systems.
+
 
